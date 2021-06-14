@@ -12,7 +12,7 @@ contract ICO {
     address admin;
     mapping (address => uint) public balances;
 
-    function ICO () public {
+    constructor() public {
         name = "demoCoin";
         decimals = 18;
         symbol = "DC";
@@ -21,6 +21,6 @@ contract ICO {
         icoStarts = now;
         allTokens = 100;
         admin = (msg.sender);
-        balances(msg.sender) = allToken;
+        balances[msg.sender] = allTokens;
     }
 }
