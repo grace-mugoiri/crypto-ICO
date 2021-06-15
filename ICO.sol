@@ -43,4 +43,9 @@ contract ICO {
         address myAdd = msg.sender;
         return myAdd;
     }
+
+    function endSale() public {
+        require(msg.sender == admin);
+        admin.transfer(address(this).balance);
+    }
 }
