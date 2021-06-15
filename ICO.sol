@@ -31,7 +31,16 @@ contract ICO {
         allTokens = allTokens + tokens;
     }
 
-    function totalSupply() public constructor returns(uint) {
+    function totalSupply() public constructor returns (uint) {
         return allTokens;
+    }
+
+    function myBalance() public constant returns (uint) {
+        return (balances[msg.sender]);
+    }
+
+    function myAddress() public constant returns (address) {
+        address myAdd = msg.sender;
+        return myAdd;
     }
 }
