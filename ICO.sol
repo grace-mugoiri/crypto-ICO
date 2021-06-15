@@ -23,4 +23,15 @@ contract ICO {
         admin = (msg.sender);
         balances[msg.sender] = allTokens;
     }
+
+    function buyTokens() public payable {
+        uint tokens;
+        tokens = msg.value;
+        balances[msg.sender] = balances[msg.sender] + tokens;
+        allTokens = allTokens + tokens;
+    }
+
+    function totalSupply() public constructor returns(uint) {
+        return allTokens;
+    }
 }
