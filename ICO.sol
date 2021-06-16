@@ -45,6 +45,8 @@ contract ICO is ERC20Interface {
     mapping (address => mapping(address => uint)) allowed;
 
     constructor() public {
+        using SafeMath for uint;
+
         name = "demoCoin";
         decimals = 18;
         symbol = "DC";
@@ -56,11 +58,19 @@ contract ICO is ERC20Interface {
         balances[msg.sender] = allTokens;
     }
     
-     function buyTokens() public payable {
+    function buyTokens() public payable {
         uint tokens;
-        tokens = msg.value;
-        balances[msg.sender] = balances[msg.sender] + tokens;
-        allTokens = allTokens + tokens;
+
+        if (now <= bonusEnds) {
+            tokens  = msg.sender.nul(125);
+        } else {
+            tokens = msg.value.nul(100);
+        }
+
+        balances[msg.sender] = balances[msg.sender].add(tokens);
+        allTokens = allTokens.add(tokens);
+        Transfer(address(0), msg.sender, tokens);
+        allContributors++;
     }
     
     function totalSupply() public constant returns(uint) {
