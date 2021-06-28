@@ -1,6 +1,25 @@
 pragma solidity ^0.4.21;
 
-contract ERC20Interface {
+ contract SafeMath {
+    function safeAdd(uint a, uint b) public pure returns (uint c) {
+        c = a + b;
+        require(c >= a);
+    }
+    function safeSub(uint a, uint b) public pure returns (uint c) {
+        require(b <= a);
+        c = a - b;
+    }
+    function safeMul(uint a, uint b) public pure returns (uint c) {
+        c = a * b;
+        require(a == 0 || c / a == b);
+    }
+     function safeDiv(uint a, uint b) public pure returns (uint c) {
+        require(b > 0);
+        c = a / b;
+    }
+ } 
+
+ contract ERC20Interface {
     function totalSupply() public constant returns (uint);
     function balanceOf(address tokenOwner) public constant returns (uint balance);
     function allowance(address tokenOwner, address spender) public constant returns (uint remaining);
@@ -12,26 +31,11 @@ contract ERC20Interface {
     event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
 }
 
- library SafeMath {
-    function add(uint a, uint b) internal pure returns (uint c) {
-        c = a + b;
-        require(c >= a);
-    }
-    function sub(uint a, uint b) internal pure returns (uint c) {
-        require(b <= a);
-        c = a - b;
-    }
-    function mul(uint a, uint b) internal pure returns (uint c) {
-        c = a * b;
-        require(a == 0 || c / a == b);
-    }
-     function div(uint a, uint b) internal pure returns (uint c) {
-        require(b > 0);
-        c = a / b;
-    }
- } 
+contract ApproveAndCallFallBack {
+    function receiveApproval(address from, uint256 tokens, address token, bytes data) public;
+}
 
-contract ICO is ERC20Interface {
+contract ICO is ERC20Interface, SafeMath {
     string public name;
     string public symbol;
     uint public decimals;
@@ -41,15 +45,16 @@ contract ICO is ERC20Interface {
     uint public allContributors;
     uint allTokens;
     address admin;
+
     mapping (address => uint) public balances;
     mapping (address => mapping(address => uint)) allowed;
 
     constructor() public {
         using SafeMath for uint;
 
-        name = "demoCoin";
-        decimals = 18;
-        symbol = "DC";
+        name = "Gemini";
+        decimals = 5;
+        symbol = "GMN";
         bonusEnds = now + 2 weeks;
         icoEnds = now + 4 weeks;
         icoStarts = now;
@@ -62,9 +67,9 @@ contract ICO is ERC20Interface {
         uint tokens;
 
         if (now <= bonusEnds) {
-            tokens  = msg.sender.nul(125);
+            tokens  = msg.sender.safeMul(125);
         } else {
-            tokens = msg.value.nul(100);
+            tokens = msg.value.safeMul(100);
         }
 
         balances[msg.sender] = balances[msg.sender].add(tokens);
@@ -102,6 +107,10 @@ contract ICO is ERC20Interface {
         return true;
     }
 
+    function allowance(address tokenOwner, address spender) public constant returns (uint remaining) {
+        return allowed[tokenOwner][spender];
+    }
+
     function myBalance() public constant returns (uint) {
         return (balances[msg.sender]);
     }
@@ -115,4 +124,17 @@ contract ICO is ERC20Interface {
         require(msg.sender == admin);
         admin.transfer(address(this).balance);
     }
+
+    function ApproveAndCall(address spender, address tokens, bytes data) public returns (bool success) {
+        allowed[msg.sender][spender] = tokens;
+        emit Approval(msg.sender, spender, tokens);
+        ApproveAndCallFallBack(spender).receiveApproval(msg.sender, tokens, this, data);
+        return true;
+    }
+
+    function () public payable {
+        revert();
+    }
 }
+
+
